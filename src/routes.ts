@@ -1,7 +1,11 @@
 import { Router } from "express";
+import { authController } from "./controllers/auth";
+import { bloodCollectorsController } from "./controllers/bloodCollectors";
 
 const router = Router()
 
-router.get('/', (req, res) => res.send('Server is runnig'))
+router.post('/auth/create', authController.store)
+
+router.post('/bloodcollectors/create', bloodCollectorsController.store)
 
 export default router

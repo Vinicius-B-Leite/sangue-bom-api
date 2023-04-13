@@ -9,3 +9,53 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+
+
+model Users {
+  uid       String  @id @default(uuid())
+  email     String
+  token     String?
+  bloodType String
+  username  String
+  password  String
+}
+
+model BloodCollectors {
+  uid         String  @id @default(uuid())
+  imageURL    String?
+  phoneNumber String
+  adress      String
+  email       String
+  username    String
+  password    String
+
+  posts Posts[]
+  alert Alert?
+}
+
+model Posts {
+  id           String @id @default(uuid())
+  bannerURL    String
+  linkRedirect String
+  adress       String
+  description  String
+
+  bloodCollectorsID String
+  bloodCollectors   BloodCollectors @relation(fields: [bloodCollectorsID], references: [uid])
+}
+
+model Alert {
+  id String @id @default(uuid())
+  status Boolean
+  bloodTypes String[]
+
+  bloodCollectorsID String @unique
+  bloodCollectors   BloodCollectors @relation(fields: [bloodCollectorsID], references: [uid])
+}
+
+model Questions {
+  id String @id @default(uuid())
+  questions String
+  answare String
+}
