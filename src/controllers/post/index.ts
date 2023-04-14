@@ -23,10 +23,10 @@ class PostController {
         const { bannerURL, linkRedirect, adress, description, id } = req.body
 
         const post = await prismaClient.posts.update({
-            where:{
+            where: {
                 id
             },
-            data:{
+            data: {
                 bannerURL,
                 linkRedirect,
                 adress,
@@ -36,6 +36,7 @@ class PostController {
 
         return res.json(post)
     }
+
 }
 
 

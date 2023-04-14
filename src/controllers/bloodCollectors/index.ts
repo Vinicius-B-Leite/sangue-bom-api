@@ -21,7 +21,25 @@ class BloodCollectorsController {
         
         return res.json({ ...bloodCollectors, token })
     }
+    async show(req: Request, res: Response) {
+        const { name } = req.query
 
+        if (name){
+            const bloodCollectors = await prismaClient.bloodCollectors.findMany({
+                where:{
+                    username: {
+                        contains: String(name)
+                    }
+                }
+            })
+
+            return res.json(bloodCollectors)
+        }
+        const bloodCollectors = await prismaClient.bloodCollectors.findMany()
+
+        
+        return res.json(bloodCollectors)
+    }
 
 }
 

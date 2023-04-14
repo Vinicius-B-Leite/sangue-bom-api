@@ -9,7 +9,9 @@ const router = Router()
 
 router.post('/auth/create', authController.store)
 router.put('/auth/update', isLogged, authController.update)
+
 router.post('/bloodcollectors/create', bloodCollectorsController.store)
+router.get('/bloodcollectors', bloodCollectorsController.show)
 
 router.post('/auth/login', authController.login)
 
