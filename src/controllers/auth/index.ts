@@ -45,7 +45,7 @@ class AuthController {
             }
 
             const token = jwt.sign({ uid: bloodCollectors.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
-            return res.json({...bloodCollectors, token})
+            return res.json({...bloodCollectors, token, type: 'blood collectors'})
         }
 
         if (user.password !== password){
@@ -53,7 +53,7 @@ class AuthController {
         }
 
         const token = jwt.sign({ uid: user.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
-        return res.json({...user, token})
+        return res.json({...user, token, type: 'normal user'})
 
 
     }
