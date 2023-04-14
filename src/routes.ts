@@ -7,11 +7,13 @@ import { postController } from "./controllers/post";
 const router = Router()
 
 router.post('/auth/create', authController.store)
+router.put('/auth/update', isLogged, authController.update)
 router.post('/bloodcollectors/create', bloodCollectorsController.store)
 
 router.post('/auth/login', authController.login)
 
 router.post('/posts', isLogged, postController.store)
+
 router.put('/posts', isLogged, postController.update)
 
 export default router

@@ -10,6 +10,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+<<<<<<< HEAD
+=======
+
+
+>>>>>>> 050a624fdb66dbcaa242a2771d308349d6b438bc
 model Users {
   uid       String  @id @default(uuid())
   email     String
@@ -29,7 +34,11 @@ model BloodCollectors {
   password    String
 
   posts Posts[]
+<<<<<<< HEAD
   alert Alert[]
+=======
+  alert Alert?
+>>>>>>> 050a624fdb66dbcaa242a2771d308349d6b438bc
 }
 
 model Posts {
@@ -48,7 +57,11 @@ model Alert {
   status Boolean
   bloodTypes String[]
 
+<<<<<<< HEAD
   bloodCollectorsID String
+=======
+  bloodCollectorsID String @unique
+>>>>>>> 050a624fdb66dbcaa242a2771d308349d6b438bc
   bloodCollectors   BloodCollectors @relation(fields: [bloodCollectorsID], references: [uid])
 }
 

@@ -36,26 +36,76 @@ class AuthController {
                 }
             })
 
-            if (!bloodCollectors){
-                return res.json({error: 'Nenhum usuário encontrado'})
+            if (!bloodCollectors) {
+                return res.json({ error: 'Nenhum usuário encontrado' })
             }
 
-            if (bloodCollectors.password !== password){
-                return res.json({error: 'Sennha incorreta'})
+            if (bloodCollectors.password !== password) {
+                return res.json({ error: 'Sennha incorreta' })
             }
 
             const token = jwt.sign({ uid: bloodCollectors.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
-            return res.json({...bloodCollectors, token, type: 'blood collectors'})
+            return res.json({ ...bloodCollectors, token, type: 'blood collectors' })
         }
 
-        if (user.password !== password){
-            return res.json({error: 'Senha incorreta'})
+        if (user.password !== password) {
+            return res.json({ error: 'Senha incorreta' })
         }
 
         const token = jwt.sign({ uid: user.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
-        return res.json({...user, token, type: 'normal user'})
+        return res.json({ ...user, token, type: 'normal user' })
 
 
+    }
+
+    async update(req: Request, res: Response) {
+        const { email, password, bloodType, imageURL, phoneNumber, adress, uid, username } = req.body
+
+        const user = await prismaClient.users.findFirst({
+            where: {
+                uid
+            }
+        })
+
+        if (!user) {
+            const bloodCollectors = await prismaClient.bloodCollectors.findFirst({
+                where: {
+                    uid
+                }
+            })
+
+            if (!bloodCollectors) return res.status(401).json({ error: 'Usuário não encontrado' })
+
+            const updatedBloocCollectors = await prismaClient.bloodCollectors.update({
+                where: {
+                    uid
+                },
+                data: {
+                    email,
+                    password,
+                    imageURL,
+                    phoneNumber,
+                    adress,
+                    username
+                }
+            })
+
+            return res.json(updatedBloocCollectors)
+        }
+
+        const updatedUser = await prismaClient.users.update({
+            where: {
+                uid
+            },
+            data: {
+                email,
+                password,
+                bloodType,
+                username
+            }
+        })
+
+        return res.json(updatedUser)
     }
 }
 
