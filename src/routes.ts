@@ -4,6 +4,7 @@ import { bloodCollectorsController } from "./controllers/bloodCollectors";
 import { isLogged } from "./middleware/isLoged";
 import { postController } from "./controllers/post";
 import { questionsController } from "./controllers/questions";
+import { alertController } from "./controllers/alert";
 
 const router = Router()
 
@@ -21,4 +22,6 @@ router.put('/posts', isLogged, postController.update)
 router.post('/questions', isLogged, questionsController.store)
 router.get('/questions', isLogged, questionsController.index)
 
+router.post('/alert', isLogged, alertController.store)
+router.get('/alert', isLogged, alertController.index)
 export default router

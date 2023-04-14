@@ -30,12 +30,19 @@ class BloodCollectorsController {
                     username: {
                         contains: String(name)
                     }
+                },
+                include:{
+                    alert: true
                 }
             })
 
             return res.json(bloodCollectors)
         }
-        const bloodCollectors = await prismaClient.bloodCollectors.findMany()
+        const bloodCollectors = await prismaClient.bloodCollectors.findMany({
+            include:{
+                alert: true
+            }
+        })
 
         
         return res.json(bloodCollectors)
