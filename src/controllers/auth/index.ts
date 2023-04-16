@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { prismaClient } from "../../prisma";
 import * as jwt from 'jsonwebtoken'
+import path from 'path'
+import fs from 'fs'
 
 class AuthController {
     async store(req: Request, res: Response) {
@@ -76,6 +78,11 @@ class AuthController {
 
             if (!bloodCollectors) return res.status(401).json({ error: 'Usuário não encontrado' })
 
+            if (bloodCollectors.imageURL && bloodCollectors.imageURL.length > 0){
+                const uploadsPath = path.resolve(__dirname, '..', '..', '..', 'uploads')
+                fs.unlink(`${uploadsPath}/${bloodCollectors.imageURL.split('/')[1]}`, () => {})
+            }
+
             const updatedBloocCollectors = await prismaClient.bloodCollectors.update({
                 where: {
                     uid
@@ -83,7 +90,7 @@ class AuthController {
                 data: {
                     email,
                     password,
-                    imageURL,
+                    imageURL: req.file?.filename && 'images/' + req.file?.filename,
                     phoneNumber,
                     adress,
                     username
