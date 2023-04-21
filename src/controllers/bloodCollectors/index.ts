@@ -9,7 +9,7 @@ class BloodCollectorsController {
         if (!email || !username || !password || !phoneNumber || !adress) {
             throw new Error(JSON.stringify({ message: 'Informe todos os dados do usuário', code: '01' }))
         }
-        if (!(String(email).includes('@'))) {
+        if (!(String(email).match('/@/'))) {
             throw new Error(JSON.stringify({ message: 'Envie um email válido', code: '13' }))
         }
 
