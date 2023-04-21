@@ -42,6 +42,9 @@ class AuthController {
         if (!email || !password) {
             throw new Error(JSON.stringify({ message: 'Este email já está em uso', code: '02' }))
         }
+        if (!(String(email).includes('@'))) {
+            throw new Error(JSON.stringify({ message: 'Envie um email válido', code: '13' }))
+        }
         if (String(password).length < 8) {
             throw new Error(JSON.stringify({ message: 'A senha deve ter no mínimo 8 caracteres', code: '03' }))
         }
@@ -85,7 +88,7 @@ class AuthController {
     async update(req: Request, res: Response) {
         const { email, password, bloodType, phoneNumber, adress, uid, username } = req.body
 
-        if (!uid){
+        if (!uid) {
             throw new Error(JSON.stringify({ message: 'Envie o uid', code: '07' }))
         }
 
