@@ -7,6 +7,10 @@ class QuestionsController {
     async store(req: Request, res: Response) {
         const { questions, answare } = req.body
 
+        if (!questions || !answare){
+            throw new Error(JSON.stringify({ message: 'Senha incorreta', code: '06' }))
+        }
+
         const q = await prismaClient.questions.create({
             data: {
                 answare,

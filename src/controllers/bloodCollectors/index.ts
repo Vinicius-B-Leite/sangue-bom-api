@@ -6,6 +6,15 @@ class BloodCollectorsController {
     async store(req: Request, res: Response) {
         const { email, username, password, phoneNumber, adress } = req.body
 
+        if (!email || !username || !password || !phoneNumber || !adress) {
+            throw new Error(JSON.stringify({ message: 'Informe todos os dados do usuário', code: '01' }))
+        }
+
+        const bloodCollectorExists = await prismaClient.bloodCollectors.findFirst({ where: { email } })
+        if (bloodCollectorExists) {
+            throw new Error(JSON.stringify({ message: 'Este email já está em uso', code: '02' }))
+        }
+
         const bloodCollectors = await prismaClient.bloodCollectors.create({
             data: {
                 email,

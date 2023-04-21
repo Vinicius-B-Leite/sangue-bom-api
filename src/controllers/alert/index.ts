@@ -6,8 +6,12 @@ class AlertController {
     async store(req: Request, res: Response) {
         const { bloodTypes, bloodCollectorsID, status } = req.body
 
+        if (!bloodCollectorsID || !bloodTypes || !status) {
+            throw new Error(JSON.stringify({ message: 'Envie os dados do alerta', code: '10' }))
+        }
+
         const alreadyExists = await prismaClient.alert.findFirst({
-            where:{
+            where: {
                 bloodCollectorsID
             }
         })
@@ -17,7 +21,7 @@ class AlertController {
                 where: {
                     id: alreadyExists.id
                 },
-                data:{
+                data: {
                     bloodTypes,
                     status
                 }
@@ -26,7 +30,7 @@ class AlertController {
             return res.json(alert)
         }
         const alert = await prismaClient.alert.create({
-            data:{
+            data: {
                 status,
                 bloodCollectorsID,
                 bloodTypes
@@ -36,9 +40,9 @@ class AlertController {
         return res.json(alert)
     }
 
-    async index(req: Request, res: Response){
+    async index(req: Request, res: Response) {
         const alerts = await prismaClient.alert.findMany({
-            include:{
+            include: {
                 bloodCollectors: true
             }
         })

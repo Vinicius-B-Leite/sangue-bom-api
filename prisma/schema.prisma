@@ -33,11 +33,12 @@ model BloodCollectors {
 }
 
 model Posts {
-  id           String @id @default(uuid())
+  id           String   @id @default(uuid())
   bannerURL    String
   linkRedirect String
   adress       String
   description  String
+  createdAt    DateTime @default(now())
 
   bloodCollectorsID String
   bloodCollectors   BloodCollectors @relation(fields: [bloodCollectorsID], references: [uid])
@@ -48,7 +49,7 @@ model Alert {
   status     Boolean
   bloodTypes String[]
 
-  bloodCollectorsID String @unique
+  bloodCollectorsID String          @unique
   bloodCollectors   BloodCollectors @relation(fields: [bloodCollectorsID], references: [uid])
 }
 

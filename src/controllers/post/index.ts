@@ -7,6 +7,10 @@ class PostController {
     async store(req: Request, res: Response) {
         const { linkRedirect, adress, description, bloodCollectorsID } = req.body
 
+        if (!linkRedirect || !adress || !description || !bloodCollectorsID || !req.file) {
+            throw new Error(JSON.stringify({ message: 'Envie todos os dados do post', code: '08' }))
+        }
+
         const post = await prismaClient.posts.create({
             data: {
                 adress,
@@ -22,6 +26,11 @@ class PostController {
 
     async update(req: Request, res: Response) {
         const { linkRedirect, adress, description, id } = req.body
+
+        if (!id) {
+            throw new Error(JSON.stringify({ message: 'Envie o id do post', code: '09' }))
+        }
+
 
         const oldPost = await prismaClient.posts.findFirst({
             where: {
@@ -49,6 +58,11 @@ class PostController {
         return res.json(post)
     }
 
+    async index(req: Request, res: Response) {
+        const posts = await prismaClient.posts.findMany({ orderBy: { createdAt: 'desc'} })
+
+        return res.json(posts)
+    }
 }
 
 

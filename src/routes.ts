@@ -25,19 +25,23 @@ const router = Router()
 router.use('/images', express.static('uploads/'))
 
 router.post('/auth/create', authController.store)
+router.post('/auth/login', authController.login)
+router.post( '/bloodcollectors/create', upload.single('avatar'), bloodCollectorsController.store)
+
+
 router.put('/auth/update', isLogged, upload.single('avatar'), authController.update)
 
-router.post('/bloodcollectors/create', upload.single('avatar'), bloodCollectorsController.store)
-router.get('/bloodcollectors', bloodCollectorsController.show)
+router.get('/bloodcollectors', isLogged, bloodCollectorsController.show)
 
-router.post('/auth/login', authController.login)
 
 router.post('/posts', isLogged, upload.single('banner'), postController.store)
 router.put('/posts', isLogged, upload.single('banner'), postController.update)
+router.get('/posts', isLogged, postController.index)
 
 router.post('/questions', isLogged, questionsController.store)
 router.get('/questions', isLogged, questionsController.index)
 
 router.post('/alert', isLogged, alertController.store)
 router.get('/alert', isLogged, alertController.index)
+
 export default router

@@ -8,6 +8,20 @@ class AuthController {
     async store(req: Request, res: Response) {
         const { email, bloodType, username, password } = req.body
 
+        if (!email || !bloodType || !username || !password) {
+            throw new Error(JSON.stringify({ message: 'Informe todos os dados do usuário', code: '01' }))
+        }
+
+        const userExists = await prismaClient.users.findFirst({ where: { email } })
+        if (userExists) {
+            throw new Error(JSON.stringify({ message: 'Este email já está em uso', code: '02' }))
+        }
+
+        if (String(password).length < 8) {
+            throw new Error(JSON.stringify({ message: 'A senha deve ter no mínimo 8 caracteres', code: '03' }))
+        }
+
+
         const user = await prismaClient.users.create({
             data: {
                 email,
@@ -25,6 +39,14 @@ class AuthController {
     async login(req: Request, res: Response) {
         const { email, password } = req.body
 
+        if (!email || !password) {
+            throw new Error(JSON.stringify({ message: 'Este email já está em uso', code: '02' }))
+        }
+        if (String(password).length < 8) {
+            throw new Error(JSON.stringify({ message: 'A senha deve ter no mínimo 8 caracteres', code: '03' }))
+        }
+
+
         const user = await prismaClient.users.findFirst({
             where: {
                 email
@@ -39,11 +61,11 @@ class AuthController {
             })
 
             if (!bloodCollectors) {
-                return res.json({ error: 'Nenhum usuário encontrado' })
+                throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
             }
 
             if (bloodCollectors.password !== password) {
-                return res.json({ error: 'Sennha incorreta' })
+                throw new Error(JSON.stringify({ message: 'Senha incorreta', code: '06' }))
             }
 
             const token = jwt.sign({ uid: bloodCollectors.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
@@ -51,7 +73,7 @@ class AuthController {
         }
 
         if (user.password !== password) {
-            return res.json({ error: 'Senha incorreta' })
+            throw new Error(JSON.stringify({ message: 'Senha incorreta', code: '06' }))
         }
 
         const token = jwt.sign({ uid: user.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
@@ -61,7 +83,11 @@ class AuthController {
     }
 
     async update(req: Request, res: Response) {
-        const { email, password, bloodType, imageURL, phoneNumber, adress, uid, username } = req.body
+        const { email, password, bloodType, phoneNumber, adress, uid, username } = req.body
+
+        if (!uid){
+            throw new Error(JSON.stringify({ message: 'Envie o uid', code: '07' }))
+        }
 
         const user = await prismaClient.users.findFirst({
             where: {
@@ -76,11 +102,13 @@ class AuthController {
                 }
             })
 
-            if (!bloodCollectors) return res.status(401).json({ error: 'Usuário não encontrado' })
+            if (!bloodCollectors) {
+                throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
+            }
 
-            if (bloodCollectors.imageURL && bloodCollectors.imageURL.length > 0){
+            if (bloodCollectors.imageURL && bloodCollectors.imageURL.length > 0 && req.file?.filename) {
                 const uploadsPath = path.resolve(__dirname, '..', '..', '..', 'uploads')
-                fs.unlink(`${uploadsPath}/${bloodCollectors.imageURL.split('/')[1]}`, () => {})
+                fs.unlink(`${uploadsPath}/${bloodCollectors.imageURL.split('/')[1]}`, () => { })
             }
 
             const updatedBloocCollectors = await prismaClient.bloodCollectors.update({
