@@ -9,8 +9,11 @@ class BloodCollectorsController {
         if (!email || !username || !password || !phoneNumber || !adress) {
             throw new Error(JSON.stringify({ message: 'Informe todos os dados do usuário', code: '01' }))
         }
-        if (!(String(email).match('/@/'))) {
+        if (!(String(email).includes('@'))) {
             throw new Error(JSON.stringify({ message: 'Envie um email válido', code: '13' }))
+        }
+        if (String(password).length < 8) {
+            throw new Error(JSON.stringify({ message: 'A senha deve ter no mínimo 8 caracteres', code: '03' }))
         }
 
         const bloodCollectorExists = await prismaClient.bloodCollectors.findFirst({ where: { email } })

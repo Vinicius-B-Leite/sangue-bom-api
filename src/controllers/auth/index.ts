@@ -11,7 +11,7 @@ class AuthController {
         if (!email || !bloodType || !username || !password) {
             throw new Error(JSON.stringify({ message: 'Informe todos os dados do usuário', code: '01' }))
         }
-        if (!email.match('/@/')) {
+        if (!(String(email).includes('@'))) {
             throw new Error(JSON.stringify({ message: 'Envie um email válido', code: '13' }))
         }
 
@@ -45,7 +45,7 @@ class AuthController {
         if (!email || !password) {
             throw new Error(JSON.stringify({ message: 'Este email já está em uso', code: '02' }))
         }
-        if (!email.match('/@/')) {
+        if (!(String(email).includes('@'))) {
             throw new Error(JSON.stringify({ message: 'Envie um email válido', code: '13' }))
         }
         if (String(password).length < 8) {
