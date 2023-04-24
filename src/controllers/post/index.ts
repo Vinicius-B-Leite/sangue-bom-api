@@ -7,13 +7,9 @@ class PostController {
     async store(req: Request, res: Response) {
         const { linkRedirect, adress, description, bloodCollectorsID } = req.body
 
-        console.log(req.body)
-
         if (!linkRedirect || !adress || !description || !bloodCollectorsID || !req.file) {
             throw new Error(JSON.stringify({ message: 'Envie todos os dados do post', code: '08' }))
         }
-
-        
 
         const post = await prismaClient.posts.create({
             data: {
