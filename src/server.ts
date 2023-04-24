@@ -10,7 +10,7 @@ app.use(router)
 
 app.use((err: Error, req: Request, res: Response, nxt: NextFunction) => {
     if (err instanceof Error) {
-        return res.status(400).json(JSON.parse(err.message))
+        return res.status(400).json(err.message)
     }
     return res.status(500).json({
         status: 'error',
@@ -19,5 +19,5 @@ app.use((err: Error, req: Request, res: Response, nxt: NextFunction) => {
 })
 
 
-const port = process.env.PORT || 3333
+const port =  3333
 app.listen(port, () => console.log('Server is running'))
