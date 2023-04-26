@@ -6,7 +6,6 @@ import path from 'path'
 class PostController {
     async store(req: Request, res: Response) {
         const { linkRedirect, adress, description, bloodCollectorsID } = req.body
-
         if (!linkRedirect || !adress || !description || !bloodCollectorsID || !req.file) {
             throw new Error(JSON.stringify({ message: 'Envie todos os dados do post', code: '08' }))
         }
@@ -59,9 +58,39 @@ class PostController {
     }
 
     async index(req: Request, res: Response) {
-        const posts = await prismaClient.posts.findMany({ orderBy: { createdAt: 'desc'} })
+        const page = Number(req.query.page as string)
+        const take = 4
+        const prevPage = page - 1
 
-        return res.json(posts)
+
+        const allPosts = await prismaClient.posts.findMany({
+            orderBy: {
+                createdAt: 'desc'
+            },
+            include: {
+                bloodCollectors: true
+            }
+        })
+
+        const maxPage = Math.ceil(allPosts.length / take)
+
+        if (page) {
+            const posts = await prismaClient.posts.findMany({
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                skip: page === 1 ? 0 : prevPage * take,
+                take,
+                include: {
+                    bloodCollectors: true
+                }
+            })
+            return res.json({ data: posts, maxPage })
+        }
+
+
+        return res.json({ data: allPosts, maxPage })
+
     }
 }
 
