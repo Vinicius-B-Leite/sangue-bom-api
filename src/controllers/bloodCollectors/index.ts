@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { prismaClient } from "../../prisma";
 import * as jwt from 'jsonwebtoken'
+import { getLatAndLong } from "../../services/getLatAndLong";
+import { Alert, BloodCollectors } from "@prisma/client";
 
 class BloodCollectorsController {
     async store(req: Request, res: Response) {
@@ -39,6 +41,16 @@ class BloodCollectorsController {
     async show(req: Request, res: Response) {
         const { name } = req.query
 
+        const getLatAndLongOfBloodCollectors = async (bloodCollectors: (BloodCollectors & { alert: Alert | null; })[]) => {
+            for (const b of bloodCollectors) {
+                const position = await getLatAndLong(b.adress)
+                const index = bloodCollectors.indexOf(b)
+                bloodCollectors[index] = { ...bloodCollectors[index], ...position }
+            }
+            return bloodCollectors
+        }
+
+
         if (name) {
             const bloodCollectors = await prismaClient.bloodCollectors.findMany({
                 where: {
@@ -51,16 +63,21 @@ class BloodCollectorsController {
                 }
             })
 
-            return res.json(bloodCollectors)
+            const bloodCollectorsWithPosition = await getLatAndLongOfBloodCollectors(bloodCollectors)
+
+            return res.json(bloodCollectorsWithPosition)
         }
+
+        
         const bloodCollectors = await prismaClient.bloodCollectors.findMany({
             include: {
                 alert: true
             }
         })
 
+        const bloodCollectorsWithPosition = await getLatAndLongOfBloodCollectors(bloodCollectors)
 
-        return res.json(bloodCollectors)
+        return res.json(bloodCollectorsWithPosition)
     }
 
 }
