@@ -114,6 +114,8 @@ class AuthController {
 
             if (bloodCollectors.imageURL && bloodCollectors.imageURL.length > 0 && req.file?.filename) {
                 const uploadsPath = path.resolve(__dirname, '..', '..', '..', 'uploads')
+                console.log(uploadsPath);
+                
                 fs.unlink(`${uploadsPath}/${bloodCollectors.imageURL.split('/')[1]}`, () => { })
             }
 

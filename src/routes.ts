@@ -23,6 +23,7 @@ const upload = multer({
 const router = Router()
 
 
+
 router.use('/images', express.static('uploads/'))
 
 router.post('/auth/create', authController.store)
