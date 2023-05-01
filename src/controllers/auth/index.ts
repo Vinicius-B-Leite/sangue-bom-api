@@ -112,12 +112,11 @@ class AuthController {
                 throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
             }
 
-            if (bloodCollectors.imageURL && bloodCollectors.imageURL.length > 0 && req.file?.filename) {
+            if (bloodCollectors?.imageURL && bloodCollectors.imageURL.length > 0 && req.file) {
                 const uploadsPath = path.resolve(__dirname, '..', '..', '..', 'uploads')
-                console.log(uploadsPath);
-                
                 fs.unlink(`${uploadsPath}/${bloodCollectors.imageURL.split('/')[1]}`, () => { })
             }
+
 
             const updatedBloocCollectors = await prismaClient.bloodCollectors.update({
                 where: {
@@ -134,6 +133,8 @@ class AuthController {
             })
 
             return res.json(updatedBloocCollectors)
+
+
         }
 
         const updatedUser = await prismaClient.users.update({
