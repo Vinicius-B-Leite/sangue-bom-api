@@ -7,6 +7,7 @@ import { questionsController } from "./controllers/questions";
 import { alertController } from "./controllers/alert";
 import multer from 'multer'
 import express from "express";
+import { notificationController } from "./controllers/notification";
 
 
 const upload = multer({
@@ -45,5 +46,7 @@ router.get('/questions', isLogged, questionsController.index)
 
 router.post('/alert', isLogged, alertController.store)
 router.get('/alert', isLogged, alertController.index)
+
+router.get('/notification', isLogged, notificationController.index)
 
 export default router

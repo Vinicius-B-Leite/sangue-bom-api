@@ -4,10 +4,16 @@ import { prismaClient } from "../../prisma";
 
 class AlertController {
     async store(req: Request, res: Response) {
-        const { bloodTypes, bloodCollectorsID, status , description} = req.body
+        const { bloodTypes, bloodCollectorsID, status, description } = req.body
 
-        if (!bloodCollectorsID || !bloodTypes || !status || !description) {
+        if (!(String(bloodCollectorsID)) || !(String(bloodTypes)) || !(String(status)) || !(String(description))) {
             throw new Error(JSON.stringify({ message: 'Envie os dados do alerta', code: '10' }))
+        }
+
+        const hasBloodCollector = await prismaClient.bloodCollectors.findFirst({ where: { uid: bloodCollectorsID } })
+
+        if (!hasBloodCollector) {
+            throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
         }
 
         const alreadyExists = await prismaClient.alert.findFirst({
@@ -15,6 +21,28 @@ class AlertController {
                 bloodCollectorsID
             }
         })
+
+
+        const users = await prismaClient.users.findMany({
+            where: {
+                bloodType: {
+                    in: bloodTypes
+                }
+            }
+        })
+
+        if (users) {
+            for (const user of users) {
+                await prismaClient.notification.create({
+                    data: {
+                        description: description,
+                        title: `O Ponto de coleta ${hasBloodCollector.username} precisa da sua ajuda`,
+                        userUID: user.uid
+                    }
+                })
+            }
+        }
+
 
         if (alreadyExists) {
             const alert = await prismaClient.alert.update({
@@ -29,6 +57,7 @@ class AlertController {
 
             return res.json(alert)
         }
+
         const alert = await prismaClient.alert.create({
             data: {
                 status,
