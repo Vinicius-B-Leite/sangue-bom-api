@@ -10,6 +10,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Admin {
+  uid         String  @id @default(uuid())
+  username    String
+  email       String
+  password    String
+}
+
 model Users {
   uid       String  @id @default(uuid())
   email     String
@@ -21,12 +28,12 @@ model Users {
 
 model BloodCollectors {
   uid         String  @id @default(uuid())
+  username    String
+  email       String
+  password    String
   imageURL    String?
   phoneNumber String
   adress      String
-  email       String
-  username    String
-  password    String
 
   posts Posts[]
   alert Alert?

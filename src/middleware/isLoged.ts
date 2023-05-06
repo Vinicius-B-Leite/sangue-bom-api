@@ -19,13 +19,7 @@ export async function isLogged(req: Request, res: Response, nxt: NextFunction) {
     }
 
     try {
-        const { uid } = jwt.verify(token, process.env.JWT_PASS ?? '') as Payload
-
-        const hasUser = prismaClient.users.findFirst({ where: { uid } })
-
-        if (!hasUser) {
-            throw new Error(JSON.stringify({ message: 'Não autorizado', code: '12' }))
-        }
+        jwt.verify(token, process.env.JWT_PASS ?? '') as Payload
 
         return nxt()
 

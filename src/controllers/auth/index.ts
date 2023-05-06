@@ -40,7 +40,7 @@ class AuthController {
     }
 
     async login(req: Request, res: Response) {
-        const { email, password } = req.body
+        const { email, password, isAdmin } = req.body
 
         if (!email || !password) {
             throw new Error(JSON.stringify({ message: 'Este email já está em uso', code: '02' }))
@@ -52,6 +52,14 @@ class AuthController {
             throw new Error(JSON.stringify({ message: 'A senha deve ter no mínimo 8 caracteres', code: '03' }))
         }
 
+        if (isAdmin) {
+            const admin = await prismaClient.admin.findFirst({ where: { email } })
+            if (!admin) throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
+            if (String(admin.password) !== String(password)) throw new Error(JSON.stringify({ message: 'Senha incorreta', code: '06' }))
+
+            const token = jwt.sign({ uid: admin.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
+            return res.json({ ...admin, token, type: 'admin' })
+        }
 
         const user = await prismaClient.users.findFirst({
             where: {
