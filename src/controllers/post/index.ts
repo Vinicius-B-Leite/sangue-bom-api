@@ -10,6 +10,11 @@ class PostController {
             throw new Error(JSON.stringify({ message: 'Envie todos os dados do post', code: '08' }))
         }
 
+        const hasBloodCollector = await prismaClient.bloodCollectors.findFirst({ where: { uid: bloodCollectorsID } })
+
+        if (!hasBloodCollector) {
+            throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
+        }
         const post = await prismaClient.posts.create({
             data: {
                 adress,
@@ -19,6 +24,22 @@ class PostController {
                 bloodCollectorsID
             }
         })
+
+
+        const users = await prismaClient.users.findMany()
+
+        if (users.length > 0) {
+
+            for (const user of users) {
+                await prismaClient.notification.create({
+                    data: {
+                        title: `Nova publicação do ponto ${user.username}`,
+                        description: description,
+                        userUID: user.uid
+                    }
+                })
+            }
+        }
 
         return res.json(post)
     }

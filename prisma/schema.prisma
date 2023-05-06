@@ -11,10 +11,10 @@ datasource db {
 }
 
 model Admin {
-  uid         String  @id @default(uuid())
-  username    String
-  email       String
-  password    String
+  uid      String @id @default(uuid())
+  username String
+  email    String
+  password String
 }
 
 model Users {
@@ -24,6 +24,17 @@ model Users {
   bloodType String
   username  String
   password  String
+
+  notification Notification[]
+}
+
+model Notification {
+  id          String @id @default(uuid())
+  title       String
+  description String
+
+  userUID String
+  user    Users  @relation(fields: [userUID], references: [uid])
 }
 
 model BloodCollectors {
@@ -52,9 +63,10 @@ model Posts {
 }
 
 model Alert {
-  id         String   @id @default(uuid())
-  status     Boolean
-  bloodTypes String[]
+  id          String   @id @default(uuid())
+  status      Boolean
+  bloodTypes  String[]
+  description String
 
   bloodCollectorsID String          @unique
   bloodCollectors   BloodCollectors @relation(fields: [bloodCollectorsID], references: [uid])

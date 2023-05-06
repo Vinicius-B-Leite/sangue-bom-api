@@ -4,9 +4,9 @@ import { prismaClient } from "../../prisma";
 
 class AlertController {
     async store(req: Request, res: Response) {
-        const { bloodTypes, bloodCollectorsID, status } = req.body
+        const { bloodTypes, bloodCollectorsID, status , description} = req.body
 
-        if (!bloodCollectorsID || !bloodTypes || !status) {
+        if (!bloodCollectorsID || !bloodTypes || !status || !description) {
             throw new Error(JSON.stringify({ message: 'Envie os dados do alerta', code: '10' }))
         }
 
@@ -33,7 +33,8 @@ class AlertController {
             data: {
                 status,
                 bloodCollectorsID,
-                bloodTypes
+                bloodTypes,
+                description: description
             }
         })
 
