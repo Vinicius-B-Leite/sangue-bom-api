@@ -29,9 +29,12 @@ model Users {
 }
 
 model Notification {
-  id          String @id @default(uuid())
+  id          String  @id @default(uuid())
   title       String
   description String
+  type        String
+  postID      String?
+  createdAt   DateTime @default(now())
 
   userUID String
   user    Users  @relation(fields: [userUID], references: [uid])

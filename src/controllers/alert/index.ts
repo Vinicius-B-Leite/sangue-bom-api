@@ -5,9 +5,10 @@ import { prismaClient } from "../../prisma";
 class AlertController {
     async store(req: Request, res: Response) {
         const { bloodTypes, bloodCollectorsID, status, description } = req.body
+        console.log( bloodTypes, bloodCollectorsID, status, description)
 
-        if (!(String(bloodCollectorsID)) || !(String(bloodTypes)) || !(String(status)) || !(String(description))) {
-            throw new Error(JSON.stringify({ message: 'Envie os dados do alerta', code: '10' }))
+        if (!bloodCollectorsID ) {
+            throw new Error(JSON.stringify({ message: 'Envie o uid', code: '07' }))
         }
 
         const hasBloodCollector = await prismaClient.bloodCollectors.findFirst({ where: { uid: bloodCollectorsID } })
@@ -37,7 +38,8 @@ class AlertController {
                     data: {
                         description: description,
                         title: `O Ponto de coleta ${hasBloodCollector.username} precisa da sua ajuda`,
-                        userUID: user.uid
+                        userUID: user.uid,
+                        type: 'alert'
                     }
                 })
             }
@@ -51,7 +53,8 @@ class AlertController {
                 },
                 data: {
                     bloodTypes,
-                    status
+                    status,
+                    description: description
                 }
             })
 

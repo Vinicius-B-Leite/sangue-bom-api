@@ -35,7 +35,9 @@ class PostController {
                     data: {
                         title: `Nova publicação do ponto ${user.username}`,
                         description: description,
-                        userUID: user.uid
+                        userUID: user.uid,
+                        type: 'post',
+                        postID: post.id
                     }
                 })
             }

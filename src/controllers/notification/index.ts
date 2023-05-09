@@ -11,11 +11,23 @@ class NotificationController {
 
         const hasUser = await prismaClient.users.findFirst({ where: { uid } })
 
+
         if (!hasUser) {
-            throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
+            const isBloodCollectors = await prismaClient.bloodCollectors.findFirst({ where: { uid } })
+
+            if (!isBloodCollectors) {
+                throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
+            }
         }
 
-        const notification = await prismaClient.notification.findMany({ where: { userUID: uid } })
+        const notification = await prismaClient.notification.findMany({
+            where: {
+                userUID: uid
+            },
+            orderBy: { 
+                createdAt: 'desc'
+            }
+        })
 
 
         return res.json(notification)
