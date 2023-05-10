@@ -40,6 +40,7 @@ router.get('/bloodcollectors', isLogged, bloodCollectorsController.show)
 router.post('/posts', isLogged, upload.single('banner'), postController.store)
 router.put('/posts', isLogged, upload.single('banner'), postController.update)
 router.get('/posts', isLogged, postController.index)
+router.get('/posts/single', isLogged, postController.show)
 
 router.post('/questions', isLogged, questionsController.store)
 router.get('/questions', isLogged, questionsController.index)

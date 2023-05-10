@@ -115,6 +115,23 @@ class PostController {
         return res.json({ data: allPosts, maxPage })
 
     }
+
+    async show(req: Request, res: Response) {
+        const postID = req.query.postid as string
+
+        if (!postID) {
+            throw new Error(JSON.stringify({ message: 'Envie o id do post', code: '09' }))
+        }
+        const post = await prismaClient.posts.findFirst({ where: { id: postID } })
+
+
+        if (!post) {
+            throw new Error(JSON.stringify({ message: 'Envie um id válido', code: '15' }))
+        }
+
+
+        return res.json(post)
+    }
 }
 
 
