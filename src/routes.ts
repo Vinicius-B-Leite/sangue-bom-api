@@ -49,5 +49,6 @@ router.post('/alert', isLogged, alertController.store)
 router.get('/alert', isLogged, alertController.index)
 
 router.get('/notification', isLogged, notificationController.index)
+router.get('/notificationlength', isLogged, notificationController.show)
 
 export default router

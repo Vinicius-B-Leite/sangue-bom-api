@@ -122,7 +122,14 @@ class PostController {
         if (!postID) {
             throw new Error(JSON.stringify({ message: 'Envie o id do post', code: '09' }))
         }
-        const post = await prismaClient.posts.findFirst({ where: { id: postID } })
+        const post = await prismaClient.posts.findFirst({
+            where: {
+                id: postID
+            },
+            include: {
+                bloodCollectors: true
+            }
+        })
 
 
         if (!post) {
