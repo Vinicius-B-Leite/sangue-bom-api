@@ -44,6 +44,7 @@ router.get('/posts/single', isLogged, postController.show)
 
 router.post('/questions', isLogged, questionsController.store)
 router.get('/questions', isLogged, questionsController.index)
+router.delete('/questions' , isLogged, questionsController.destory)
 
 router.post('/alert', isLogged, alertController.store)
 router.get('/alert', isLogged, alertController.index)
