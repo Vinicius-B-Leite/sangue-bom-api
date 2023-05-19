@@ -42,6 +42,32 @@ class QuestionsController {
 
         return res.status(200)
     }
+
+    async update(req: Request, res: Response) {
+        const { answare, question, id } = req.body
+
+        if (!id) {
+            throw new Error(JSON.stringify({ message: 'Envie um id válido', code: '15' }))
+        }
+
+        const exists = await prismaClient.questions.findFirst({ where: { id } })
+
+        if (!exists) {
+            throw new Error(JSON.stringify({ message: 'Esta questão não existe', code: '16' }))
+        }
+
+        const newQuestion = await prismaClient.questions.update({
+            data: {
+                answare,
+                questions: question
+            },
+            where: {
+                id
+            }
+        })
+
+        return res.json(newQuestion)
+    }
 }
 
 export const questionsController = new QuestionsController()
