@@ -8,7 +8,7 @@ class AlertController {
         console.log( bloodTypes, bloodCollectorsID, status, description)
 
         if (!bloodCollectorsID ) {
-            throw new Error(JSON.stringify({ message: 'Envie o uid', code: '07' }))
+            throw new Error(JSON.stringify({ message: 'Envie um uid válido', code: '07' }))
         }
 
         const hasBloodCollector = await prismaClient.bloodCollectors.findFirst({ where: { uid: bloodCollectorsID } })

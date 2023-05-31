@@ -6,13 +6,16 @@ import fs from 'fs'
 
 class AuthController {
     async store(req: Request, res: Response) {
-        const { email, bloodType, username, password } = req.body
+        const { email, bloodType, username, password, gender } = req.body
 
-        if (!email || !bloodType || !username || !password) {
+        if (!email || !bloodType || !username || !password || !gender) {
             throw new Error(JSON.stringify({ message: 'Informe todos os dados do usuário', code: '01' }))
         }
         if (!(String(email).includes('@'))) {
             throw new Error(JSON.stringify({ message: 'Envie um email válido', code: '13' }))
+        }
+        if (['male', 'female'].includes(gender) === false) {
+            throw new Error(JSON.stringify({ message: 'Envie um gênero biológico válido', code: '20' }))
         }
 
         const userExists = await prismaClient.users.findFirst({ where: { email } })
@@ -30,7 +33,8 @@ class AuthController {
                 email,
                 bloodType,
                 username,
-                password
+                password,
+                gender
             }
         })
 
@@ -54,8 +58,11 @@ class AuthController {
 
         if (isAdmin) {
             const admin = await prismaClient.admin.findFirst({ where: { email } })
+
             if (!admin) throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
-            if (String(admin.password) !== String(password)) throw new Error(JSON.stringify({ message: 'Senha incorreta', code: '06' }))
+
+
+            if (admin.password !== password) throw new Error(JSON.stringify({ message: 'Senha incorreta', code: '06' }))
 
             const token = jwt.sign({ uid: admin.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
             return res.json({ ...admin, token, type: 'admin' })
@@ -100,7 +107,7 @@ class AuthController {
         const { email, password, bloodType, phoneNumber, adress, uid, username } = req.body
 
         if (!uid) {
-            throw new Error(JSON.stringify({ message: 'Envie o uid', code: '07' }))
+            throw new Error(JSON.stringify({ message: 'Envie um uid válido', code: '07' }))
         }
 
         const user = await prismaClient.users.findFirst({

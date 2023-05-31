@@ -24,12 +24,14 @@ model Users {
   bloodType String
   username  String
   password  String
+  gender    String
 
   notification Notification[]
+  donate       Donate[]
 }
 
 model Notification {
-  id          String  @id @default(uuid())
+  id          String   @id @default(uuid())
   title       String
   description String
   type        String
@@ -49,8 +51,9 @@ model BloodCollectors {
   phoneNumber String
   adress      String
 
-  posts Posts[]
-  alert Alert?
+  posts  Posts[]
+  alert  Alert?
+  donate Donate[]
 }
 
 model Posts {
@@ -79,4 +82,15 @@ model Questions {
   id        String @id @default(uuid())
   questions String
   answare   String
+}
+
+model Donate {
+  id   String   @id @default(uuid())
+  date DateTime
+
+  userID String
+  users  Users  @relation(fields: [userID], references: [uid])
+
+  bloodCollectoID String
+  bloodCollectors BloodCollectors @relation(fields: [bloodCollectoID], references: [uid])
 }

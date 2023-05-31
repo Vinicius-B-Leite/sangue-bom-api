@@ -8,10 +8,11 @@ import { alertController } from "./controllers/alert";
 import multer from 'multer'
 import express from "express";
 import { notificationController } from "./controllers/notification";
+import { donateController } from "./controllers/donate";
 
 
 const upload = multer({
-    limits: {fieldSize:  25 * 1024 * 1024},
+    limits: { fieldSize: 25 * 1024 * 1024 },
     storage: multer.diskStorage({
         destination: (req, file, cb) => {
             cb(null, 'uploads/')
@@ -24,12 +25,11 @@ const upload = multer({
 const router = Router()
 
 
-
 router.use('/images', express.static('uploads/'))
 
 router.post('/auth/create', authController.store)
 router.post('/auth/login', authController.login)
-router.post( '/bloodcollectors/create', upload.single('avatar'), bloodCollectorsController.store)
+router.post('/bloodcollectors/create', upload.single('avatar'), bloodCollectorsController.store)
 
 
 router.put('/auth/update', isLogged, upload.single('avatar'), authController.update)
@@ -45,12 +45,15 @@ router.get('/posts/single', isLogged, postController.show)
 router.post('/questions', isLogged, questionsController.store)
 router.get('/questions', isLogged, questionsController.index)
 router.put('/questions', isLogged, questionsController.update)
-router.delete('/questions' , isLogged, questionsController.destory)
+router.delete('/questions', isLogged, questionsController.destory)
 
 router.post('/alert', isLogged, alertController.store)
 router.get('/alert', isLogged, alertController.index)
 
 router.get('/notification', isLogged, notificationController.index)
 router.get('/notificationlength', isLogged, notificationController.show)
+
+router.post('/donate', isLogged, donateController.store)
+router.get('/donate', isLogged, donateController.show)
 
 export default router

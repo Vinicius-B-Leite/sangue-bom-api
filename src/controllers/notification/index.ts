@@ -17,7 +17,7 @@ class NotificationController {
         const uid = req.query.uid as string
 
         if (!(String(uid))) {
-            throw new Error(JSON.stringify({ message: 'Envie o uid', code: '07' }))
+            throw new Error(JSON.stringify({ message: 'Envie um uid válido', code: '07' }))
         }
 
         const hasUser = await prismaClient.users.findFirst({ where: { uid } })
@@ -49,7 +49,7 @@ class NotificationController {
         const lastedRead = req.query.lastedread as string
 
         if (!uid) {
-            throw new Error(JSON.stringify({ message: 'Envie o uid', code: '07' }))
+            throw new Error(JSON.stringify({ message: 'Envie um uid válido', code: '07' }))
         }
 
         const hasUser = await prismaClient.users.findFirst({ where: { uid } })
