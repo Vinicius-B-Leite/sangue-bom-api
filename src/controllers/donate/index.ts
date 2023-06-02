@@ -4,9 +4,13 @@ import { differenceInCalendarDays } from "date-fns";
 
 
 class DonateController {
+
+
+
     async store(req: Request, res: Response) {
         const { userID, date, bloodCollectorID } = req.body
-
+        const daysMaleShouldWaitToDonate = 60
+        const daysFemaleShouldWaitToDonate = 90
         if (!userID || !date || !bloodCollectorID) {
             throw new Error(JSON.stringify({ message: 'Envie todos os dados', code: '17' }))
         }
@@ -25,6 +29,51 @@ class DonateController {
             throw new Error(JSON.stringify({ message: 'Data além do limite', code: '19' }))
         }
 
+        const getDaysToDonate = (gender: string, lastDonateDaysDiff: number) => {
+            let waitDaysToDonate = 0
+
+            if (gender === 'male') {
+                waitDaysToDonate = lastDonateDaysDiff <= 0 ? 0 :
+                    daysMaleShouldWaitToDonate - lastDonateDaysDiff
+            }
+            if (gender === 'female') {
+                waitDaysToDonate = lastDonateDaysDiff <= 0 ? 0 : daysFemaleShouldWaitToDonate - lastDonateDaysDiff
+            }
+
+            return waitDaysToDonate
+        }
+
+
+
+
+
+        const donates = await prismaClient.donate.findMany({
+            where: {
+                userID: userID
+            },
+            orderBy: {
+                date: 'desc'
+            }
+        })
+        if (donates.length === 0){
+            const donate = await prismaClient.donate.create({
+                data: {
+                    date,
+                    bloodCollectoID: bloodCollectorID,
+                    userID
+                }
+            })
+    
+            return res.json(donate)
+        }
+        const lastDonateDaysDiff = differenceInCalendarDays(donates[0].date, new Date())
+
+        const waitDaysToDonate = getDaysToDonate(userExists.gender, lastDonateDaysDiff)
+
+        if (waitDaysToDonate > 0) {
+            throw new Error(JSON.stringify({ message: `Ainda faltam ${waitDaysToDonate} dias para poder doar novamente`, code: '21' }))
+        }
+
         const donate = await prismaClient.donate.create({
             data: {
                 date,
@@ -40,6 +89,20 @@ class DonateController {
         const userid = req.query.userid as string
         const daysMaleShouldWaitToDonate = 60
         const daysFemaleShouldWaitToDonate = 90
+        const getDaysToDonate = (gender: string, lastDonateDaysDiff: number) => {
+            let waitDaysToDonate = 0
+
+            if (gender === 'male') {
+                waitDaysToDonate = lastDonateDaysDiff < 0 ? 0 :
+                    daysMaleShouldWaitToDonate - lastDonateDaysDiff
+            }
+            if (gender === 'female') {
+                waitDaysToDonate = lastDonateDaysDiff <= 0 ? 0 : daysFemaleShouldWaitToDonate - lastDonateDaysDiff
+            }
+
+            return waitDaysToDonate
+        }
+
 
         if (!userid) {
             const donates = await prismaClient.donate.findMany()
@@ -65,17 +128,18 @@ class DonateController {
                 date: 'desc'
             }
         })
-        let waitDaysToDonate = 0
+        if (donates.length === 0) {            
+            return res.json({ donates, waitDaysToDonate: 0 })
+        }
         const lastDonateDaysDiff = differenceInCalendarDays(donates[0].date, new Date())
 
-        if (user.gender === 'male') {
-            waitDaysToDonate = lastDonateDaysDiff <= 0 ? 0 : daysMaleShouldWaitToDonate - differenceInCalendarDays(donates[0].date, new Date())
-        }
-        if (user.gender === 'female') {
-            waitDaysToDonate = lastDonateDaysDiff <= 0 ? 0 : daysFemaleShouldWaitToDonate - differenceInCalendarDays(donates[0].date, new Date())
-        }
+        const waitDaysToDonate = getDaysToDonate(user.gender, lastDonateDaysDiff)
+
+
         return res.json({ donates, waitDaysToDonate })
     }
+
+
 }
 
 
