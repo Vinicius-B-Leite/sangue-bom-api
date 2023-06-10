@@ -1,7 +1,9 @@
 import { Request, Response } from "express";
 import { prismaClient } from "../../prisma";
+
 import fs from 'fs'
 import path from 'path'
+import { sendNotification } from "../../services/onesignal/sendNotification";
 
 class PostController {
     async store(req: Request, res: Response) {
@@ -29,11 +31,15 @@ class PostController {
         const users = await prismaClient.users.findMany()
 
         if (users.length > 0) {
-
+            await sendNotification({
+                bodyMessage: `Nova publicação do ponto ${hasBloodCollector.username}`,
+                campaingName: 'Nova publicação'
+            })
+            
             for (const user of users) {
                 await prismaClient.notification.create({
                     data: {
-                        title: `Nova publicação do ponto ${user.username}`,
+                        title: `Nova publicação do ponto ${hasBloodCollector.username}`,
                         description: description,
                         userUID: user.uid,
                         type: 'post',

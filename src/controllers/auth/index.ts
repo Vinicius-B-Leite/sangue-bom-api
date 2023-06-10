@@ -40,7 +40,7 @@ class AuthController {
 
         const token = jwt.sign({ uid: user.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
 
-        return res.json({ ...user, token })
+        return res.json({ ...user, token , type: 'normal user'})
     }
 
     async login(req: Request, res: Response) {

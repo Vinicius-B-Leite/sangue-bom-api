@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Request, Response, Router } from "express";
 import { authController } from "./controllers/auth";
 import { bloodCollectorsController } from "./controllers/bloodCollectors";
 import { isLogged } from "./middleware/isLoged";
@@ -9,6 +9,8 @@ import multer from 'multer'
 import express from "express";
 import { notificationController } from "./controllers/notification";
 import { donateController } from "./controllers/donate";
+import { onesignalClient } from "./services/onesignal";
+import { sendNotification } from "./services/onesignal/sendNotification";
 
 
 const upload = multer({
@@ -36,8 +38,7 @@ router.put('/auth/update', isLogged, upload.single('avatar'), authController.upd
 
 router.get('/bloodcollectors', isLogged, bloodCollectorsController.show)
 
-
-router.post('/posts', isLogged, upload.single('banner'), postController.store)
+router.post('/posts', upload.single('banner'), postController.store)
 router.put('/posts', isLogged, upload.single('banner'), postController.update)
 router.get('/posts', isLogged, postController.index)
 router.get('/posts/single', isLogged, postController.show)
