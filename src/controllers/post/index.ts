@@ -32,10 +32,15 @@ class PostController {
 
         if (users.length > 0) {
             await sendNotification({
-                bodyMessage: `Nova publicação do ponto ${hasBloodCollector.username}`,
-                campaingName: 'Nova publicação'
+                bodyMessage: `Nova publicação do ponto  de coleta ${hasBloodCollector.username}`,
+                campaingName: 'Nova publicação',
+                data: JSON.stringify({
+                    postID: post.id
+                }),
+                deeplink: `sanguebom://post/${post.id}`,
+                title: 'Nova publicação'
             })
-            
+
             for (const user of users) {
                 await prismaClient.notification.create({
                     data: {

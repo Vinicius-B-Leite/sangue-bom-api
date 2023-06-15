@@ -1,13 +1,15 @@
 import { Request, Response } from "express";
 import { prismaClient } from "../../prisma";
+import { sendNotification } from "../../services/onesignal/sendNotification";
+import { Filter } from "@onesignal/node-onesignal";
 
 
 class AlertController {
     async store(req: Request, res: Response) {
         const { bloodTypes, bloodCollectorsID, status, description } = req.body
-        console.log( bloodTypes, bloodCollectorsID, status, description)
+        console.log(bloodTypes, bloodCollectorsID, status, description)
 
-        if (!bloodCollectorsID ) {
+        if (!bloodCollectorsID) {
             throw new Error(JSON.stringify({ message: 'Envie um uid válido', code: '07' }))
         }
 
@@ -33,6 +35,22 @@ class AlertController {
         })
 
         if (users) {
+            for (const bloodType of bloodTypes) {
+                await sendNotification({
+                    bodyMessage: description,
+                    title: `O Ponto de coleta ${hasBloodCollector.username} precisa da sua ajuda`,
+                    campaingName: 'Alerta de sangue',
+                    filters: [
+                        {
+                            field: 'tag',
+                            key: 'bloodType',
+                            relation: '=',
+                            value: bloodType
+                        }
+                    ]
+                })
+            }
+
             for (const user of users) {
                 await prismaClient.notification.create({
                     data: {
