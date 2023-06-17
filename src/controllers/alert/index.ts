@@ -5,79 +5,92 @@ import { Filter } from "@onesignal/node-onesignal";
 
 
 class AlertController {
-    async store(req: Request, res: Response) {
+    private async sendNotificationToUsersWithBloodType(bloodTypes: string, description: string, bloodCollectorName: string) {
+        for (const bloodType of bloodTypes) {
+            await sendNotification({
+                bodyMessage: description,
+                title: `O Ponto de coleta ${bloodCollectorName} precisa da sua ajuda`,
+                campaingName: 'Alerta de sangue',
+                filters: [
+                    {
+                        field: 'tag',
+                        key: 'bloodType',
+                        relation: '=',
+                        value: bloodType
+                    }
+                ]
+            })
+        }
+    }
+    store = async (req: Request, res: Response) => {
         const { bloodTypes, bloodCollectorsID, status, description } = req.body
-        console.log(bloodTypes, bloodCollectorsID, status, description)
 
         if (!bloodCollectorsID) {
             throw new Error(JSON.stringify({ message: 'Envie um uid válido', code: '07' }))
         }
 
-        const hasBloodCollector = await prismaClient.bloodCollectors.findFirst({ where: { uid: bloodCollectorsID } })
+        const hasBloodCollector = await prismaClient.bloodCollectors.findFirst({
+            where: {
+                uid: bloodCollectorsID
+            },
+            include: {
+                alert: true,
+                users: true
+            }
+        })
 
         if (!hasBloodCollector) {
             throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
         }
 
-        const alreadyExists = await prismaClient.alert.findFirst({
-            where: {
-                bloodCollectorsID
-            }
-        })
+        const alertAlreadyExists = !!hasBloodCollector.alert
+
+        if (alertAlreadyExists) {
+            const [_, alert] = await Promise.all([
+                this.sendNotificationToUsersWithBloodType(bloodTypes, description, hasBloodCollector.users.username),
+                prismaClient.alert.update({
+                    where: {
+                        id: hasBloodCollector.alert?.id
+                    },
+                    data: {
+                        bloodTypes,
+                        status,
+                        description
+                    }
+                })
+
+            ])
+
+            return res.json(alert)
+        }
 
 
-        const users = await prismaClient.users.findMany({
+        const users = await prismaClient.donors.findMany({
             where: {
                 bloodType: {
                     in: bloodTypes
                 }
+            },
+            include: {
+                users: true
             }
         })
 
         if (users) {
-            for (const bloodType of bloodTypes) {
-                await sendNotification({
-                    bodyMessage: description,
-                    title: `O Ponto de coleta ${hasBloodCollector.username} precisa da sua ajuda`,
-                    campaingName: 'Alerta de sangue',
-                    filters: [
-                        {
-                            field: 'tag',
-                            key: 'bloodType',
-                            relation: '=',
-                            value: bloodType
-                        }
-                    ]
-                })
-            }
+            await this.sendNotificationToUsersWithBloodType(bloodTypes, description, hasBloodCollector.users.username)
 
             for (const user of users) {
                 await prismaClient.notification.create({
                     data: {
                         description: description,
-                        title: `O Ponto de coleta ${hasBloodCollector.username} precisa da sua ajuda`,
-                        userUID: user.uid,
+                        title: `O Ponto de coleta ${hasBloodCollector.users.username} precisa da sua ajuda`,
+                        donorsUID: user.uid,
                         type: 'alert'
                     }
                 })
             }
         }
 
-
-        if (alreadyExists) {
-            const alert = await prismaClient.alert.update({
-                where: {
-                    id: alreadyExists.id
-                },
-                data: {
-                    bloodTypes,
-                    status,
-                    description: description
-                }
-            })
-
-            return res.json(alert)
-        }
 
         const alert = await prismaClient.alert.create({
             data: {

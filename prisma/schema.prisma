@@ -10,21 +10,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Admin {
-  uid      String @id @default(uuid())
-  username String
-  email    String
+model Users {
+  email    String @id
   password String
+  username String
+  type     String
+
+  donors          Donors?
+  bloodCollectors BloodCollectors?
 }
 
-model Users {
-  uid       String  @id @default(uuid())
-  email     String
-  token     String?
+model Donors {
+  uid       String @id @default(uuid())
   bloodType String
-  username  String
-  password  String
   gender    String
+
+  userEmail String @unique
+  users     Users  @relation(fields: [userEmail], references: [email])
 
   notification Notification[]
   donate       Donate[]
@@ -38,18 +40,18 @@ model Notification {
   postID      String?
   createdAt   DateTime @default(now())
 
-  userUID String
-  user    Users  @relation(fields: [userUID], references: [uid])
+  donorsUID String
+  donors    Donors @relation(fields: [donorsUID], references: [uid])
 }
 
 model BloodCollectors {
   uid         String  @id @default(uuid())
-  username    String
-  email       String
-  password    String
   imageURL    String?
   phoneNumber String
   adress      String
+
+  userEmail String @unique
+  users     Users  @relation(fields: [userEmail], references: [email])
 
   posts  Posts[]
   alert  Alert?
@@ -59,7 +61,7 @@ model BloodCollectors {
 model Posts {
   id           String   @id @default(uuid())
   bannerURL    String
-  linkRedirect String
+  linkRedirect String?
   adress       String
   description  String
   createdAt    DateTime @default(now())
@@ -88,8 +90,8 @@ model Donate {
   id   String   @id @default(uuid())
   date DateTime
 
-  userID String
-  users  Users  @relation(fields: [userID], references: [uid])
+  donorID String
+  donors  Donors @relation(fields: [donorID], references: [uid])
 
   bloodCollectoID String
   bloodCollectors BloodCollectors @relation(fields: [bloodCollectoID], references: [uid])

@@ -8,11 +8,22 @@ import { sendNotification } from "../../services/onesignal/sendNotification";
 class PostController {
     async store(req: Request, res: Response) {
         const { linkRedirect, adress, description, bloodCollectorsID } = req.body
-        if (!linkRedirect || !adress || !description || !bloodCollectorsID || !req.file) {
+
+        if (!adress || !description || !bloodCollectorsID || !req.file) {
             throw new Error(JSON.stringify({ message: 'Envie todos os dados do post', code: '08' }))
         }
 
-        const hasBloodCollector = await prismaClient.bloodCollectors.findFirst({ where: { uid: bloodCollectorsID } })
+        const hasBloodCollector = await prismaClient.users.findFirst({
+            where: {
+                bloodCollectors: {
+                    uid: bloodCollectorsID
+                },
+                type: 'bloodCollectors'
+            },
+            include: {
+                bloodCollectors: true
+            }
+        })
 
         if (!hasBloodCollector) {
             throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
@@ -28,7 +39,14 @@ class PostController {
         })
 
 
-        const users = await prismaClient.users.findMany()
+        const users = await prismaClient.users.findMany({
+            where: {
+                type: 'donors'
+            },
+            include: {
+                donors: true
+            }
+        })
 
         if (users.length > 0) {
             await sendNotification({
@@ -42,11 +60,15 @@ class PostController {
             })
 
             for (const user of users) {
+
+                const userIDToSendNotification = user.donors?.uid
+
+
                 await prismaClient.notification.create({
                     data: {
                         title: `Nova publicação do ponto ${hasBloodCollector.username}`,
                         description: description,
-                        userUID: user.uid,
+                        donorsUID: userIDToSendNotification || '',
                         type: 'post',
                         postID: post.id
                     }
@@ -71,6 +93,10 @@ class PostController {
             }
         })
 
+        if (!oldPost){
+            throw new Error(JSON.stringify({message: 'Envie um post id válido', code: '22'}))
+        }
+
         if (oldPost && oldPost?.bannerURL.length > 0 && req.file?.filename) {
             const filePath = path.resolve(__dirname, '..', '..', '..', 'uploads')
             fs.unlink(`${filePath}/${oldPost?.bannerURL.split('/')[1]}`, () => { })
@@ -92,7 +118,7 @@ class PostController {
     }
 
     async index(req: Request, res: Response) {
-        const page = Number(req.query.page as string)
+        const page = Number(req.query.page)
         const take = 4
         const prevPage = page - 1
 
@@ -102,7 +128,11 @@ class PostController {
                 createdAt: 'desc'
             },
             include: {
-                bloodCollectors: true
+                bloodCollectors: {
+                    include:{
+                        users: true
+                    }
+                }
             }
         })
 
@@ -116,7 +146,11 @@ class PostController {
                 skip: page === 1 ? 0 : prevPage * take,
                 take,
                 include: {
-                    bloodCollectors: true
+                    bloodCollectors: {
+                        include:{
+                            users: true
+                        }
+                    }
                 }
             })
             return res.json({ data: posts, maxPage })
@@ -138,7 +172,11 @@ class PostController {
                 id: postID
             },
             include: {
-                bloodCollectors: true
+                bloodCollectors: {
+                    include:{
+                        users: true
+                    }
+                }
             }
         })
 

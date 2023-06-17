@@ -20,20 +20,22 @@ class NotificationController {
             throw new Error(JSON.stringify({ message: 'Envie um uid válido', code: '07' }))
         }
 
-        const hasUser = await prismaClient.users.findFirst({ where: { uid } })
+        const hasUser = await prismaClient.users.findFirst({
+            where: {
+                donors: {
+                    uid
+                }
+            }
+        })
 
 
         if (!hasUser) {
-            const isBloodCollectors = await prismaClient.bloodCollectors.findFirst({ where: { uid } })
-
-            if (!isBloodCollectors) {
-                throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
-            }
+            throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
         }
 
         const notification = await prismaClient.notification.findMany({
             where: {
-                userUID: uid
+                donorsUID: uid
             },
             orderBy: {
                 createdAt: 'desc'
@@ -52,21 +54,23 @@ class NotificationController {
             throw new Error(JSON.stringify({ message: 'Envie um uid válido', code: '07' }))
         }
 
-        const hasUser = await prismaClient.users.findFirst({ where: { uid } })
+        const hasUser = await prismaClient.users.findFirst({
+            where: {
+                donors: {
+                    uid
+                }
+            }
+        })
 
 
         if (!hasUser) {
-            const isBloodCollectors = await prismaClient.bloodCollectors.findFirst({ where: { uid } })
-
-            if (!isBloodCollectors) {
-                throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
-            }
+            throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
         }
 
 
         const notifications = await prismaClient.notification.findMany({
             where: {
-                userUID: uid
+                donorsUID: uid
             },
             orderBy: {
                 createdAt: 'desc'

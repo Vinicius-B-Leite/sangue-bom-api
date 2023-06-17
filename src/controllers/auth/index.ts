@@ -31,23 +31,30 @@ class AuthController {
         const user = await prismaClient.users.create({
             data: {
                 email,
-                bloodType,
-                username,
                 password,
-                gender
+                type: 'donors',
+                username,
+                donors: {
+                    create: {
+                        bloodType,
+                        gender,
+                    }
+                }
+            },
+            include: {
+                donors: true
             }
         })
+        const token = jwt.sign({ uid: user.donors?.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
 
-        const token = jwt.sign({ uid: user.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
-
-        return res.json({ ...user, token , type: 'normal user'})
+        return res.json({ ...user, token, type: 'normal user' })
     }
 
     async login(req: Request, res: Response) {
         const { email, password, isAdmin } = req.body
 
         if (!email || !password) {
-            throw new Error(JSON.stringify({ message: 'Este email já está em uso', code: '02' }))
+            throw new Error(JSON.stringify({ message: 'Envie o email e senha para fazer login', code: '04' }))
         }
         if (!(String(email).includes('@'))) {
             throw new Error(JSON.stringify({ message: 'Envie um email válido', code: '13' }))
@@ -56,94 +63,104 @@ class AuthController {
             throw new Error(JSON.stringify({ message: 'A senha deve ter no mínimo 8 caracteres', code: '03' }))
         }
 
-        if (isAdmin) {
-            const admin = await prismaClient.admin.findFirst({ where: { email } })
-
-            if (!admin) throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
-
-
-            if (admin.password !== password) throw new Error(JSON.stringify({ message: 'Senha incorreta', code: '06' }))
-
-            const token = jwt.sign({ uid: admin.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
-            return res.json({ ...admin, token, type: 'admin' })
-        }
-
         const user = await prismaClient.users.findFirst({
             where: {
                 email
+            },
+            include: {
+                bloodCollectors: true,
+                donors: true
             }
         })
 
         if (!user) {
-            const bloodCollectors = await prismaClient.bloodCollectors.findFirst({
-                where: {
-                    email
-                }
-            })
-
-            if (!bloodCollectors) {
-                throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
-            }
-
-            if (bloodCollectors.password !== password) {
-                throw new Error(JSON.stringify({ message: 'Senha incorreta', code: '06' }))
-            }
-
-            const token = jwt.sign({ uid: bloodCollectors.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
-            return res.json({ ...bloodCollectors, token, type: 'blood collectors' })
+            throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
         }
 
         if (user.password !== password) {
             throw new Error(JSON.stringify({ message: 'Senha incorreta', code: '06' }))
         }
 
-        const token = jwt.sign({ uid: user.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
-        return res.json({ ...user, token, type: 'normal user' })
 
+        if (isAdmin) {
+            const userHasAdminType = user?.type === 'admin'
+
+            if (!userHasAdminType) throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
+
+
+            const token = jwt.sign({ email: user.email }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
+            return res.json({ ...user, token })
+        }
+
+
+
+        const isDonors = user.type === 'donors'
+
+        const token = jwt.sign({ uid: user[isDonors ? 'donors' : 'bloodCollectors']?.uid }, process.env.JWT_PASS ?? '', { expiresIn: '15d' })
+        return res.json({ ...user, token })
 
     }
 
     async update(req: Request, res: Response) {
-        const { email, password, bloodType, phoneNumber, adress, uid, username } = req.body
+        const { email, password, username, bloodType, phoneNumber, adress, uid } = req.body
 
         if (!uid) {
-            throw new Error(JSON.stringify({ message: 'Envie um uid válido', code: '07' }))
+            throw new Error(JSON.stringify({ message: 'Envie o uid válido', code: '07' }))
         }
 
         const user = await prismaClient.users.findFirst({
             where: {
-                uid
+                OR: [
+                    {
+                        bloodCollectors: {
+                            uid
+                        }
+                    },
+                    {
+                        donors: {
+                            uid
+                        }
+                    }
+                ]
+            },
+            include: {
+                bloodCollectors: true,
+                donors: true
             }
         })
 
         if (!user) {
-            const bloodCollectors = await prismaClient.bloodCollectors.findFirst({
-                where: {
-                    uid
-                }
-            })
+            throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
+        }
 
-            if (!bloodCollectors) {
-                throw new Error(JSON.stringify({ message: 'Nenhum usuário encontrado', code: '05' }))
-            }
+        if (user.type === 'bloodCollectors' && user.bloodCollectors) {
+            const bloodCollectors = user.bloodCollectors
 
-            if (bloodCollectors?.imageURL && bloodCollectors.imageURL.length > 0 && req.file) {
+            if (bloodCollectors.imageURL && bloodCollectors.imageURL.length > 0 && req.file) {
                 const uploadsPath = path.resolve(__dirname, '..', '..', '..', 'uploads')
                 fs.unlink(`${uploadsPath}/${bloodCollectors.imageURL.split('/')[1]}`, () => { })
             }
 
 
-            const updatedBloocCollectors = await prismaClient.bloodCollectors.update({
+            const updatedBloocCollectors = await prismaClient.users.update({
                 where: {
-                    uid
+                    email: user.email
                 },
                 data: {
                     email,
                     password,
-                    imageURL: req.file?.filename && 'images/' + req.file?.filename,
-                    phoneNumber,
-                    adress,
-                    username
+                    username,
+                    bloodCollectors: {
+                        update: {
+                            imageURL: req.file?.filename && 'images/' + req.file?.filename,
+                            phoneNumber,
+                            adress,
+                        }
+                    }
+
+                },
+                include:{
+                    bloodCollectors: true
                 }
             })
 
@@ -154,13 +171,20 @@ class AuthController {
 
         const updatedUser = await prismaClient.users.update({
             where: {
-                uid
+                email: user.email
             },
             data: {
                 email,
                 password,
-                bloodType,
-                username
+                username,
+                donors: {
+                    update: {
+                        bloodType,
+                    }
+                }
+            },
+            include:{
+                donors: true
             }
         })
 
