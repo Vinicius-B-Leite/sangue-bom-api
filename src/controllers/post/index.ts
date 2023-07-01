@@ -93,8 +93,8 @@ class PostController {
             }
         })
 
-        if (!oldPost){
-            throw new Error(JSON.stringify({message: 'Envie um post id válido', code: '22'}))
+        if (!oldPost) {
+            throw new Error(JSON.stringify({ message: 'Envie um post id válido', code: '22' }))
         }
 
         if (oldPost && oldPost?.bannerURL.length > 0 && req.file?.filename) {
@@ -129,7 +129,7 @@ class PostController {
             },
             include: {
                 bloodCollectors: {
-                    include:{
+                    include: {
                         users: true
                     }
                 }
@@ -147,17 +147,25 @@ class PostController {
                 take,
                 include: {
                     bloodCollectors: {
-                        include:{
+                        include: {
                             users: true
                         }
                     }
                 }
             })
-            return res.json({ data: posts, maxPage })
+            let postsFormated = posts.map(post => ({
+                ...post,
+                bloodCollectors: {
+                    ...post.bloodCollectors, 
+                    username: post.bloodCollectors.users.username
+                }
+            }))
+
+            return res.json({ data: postsFormated, maxPage })
         }
 
-
-        return res.json({ data: allPosts, maxPage })
+        let posts = allPosts.map(post => ({ ...post, bloodCollectors: { ...post.bloodCollectors.users } }))
+        return res.json({ data: posts, maxPage })
 
     }
 
@@ -173,7 +181,7 @@ class PostController {
             },
             include: {
                 bloodCollectors: {
-                    include:{
+                    include: {
                         users: true
                     }
                 }
@@ -185,8 +193,8 @@ class PostController {
             throw new Error(JSON.stringify({ message: 'Envie um id válido', code: '15' }))
         }
 
-
-        return res.json(post)
+        let postsFormated = ({ ...post, bloodCollectors: { ...post.bloodCollectors, ...post.bloodCollectors.users } })
+        return res.json(postsFormated)
     }
 }
 

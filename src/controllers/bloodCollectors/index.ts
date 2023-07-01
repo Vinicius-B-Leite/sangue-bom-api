@@ -93,7 +93,7 @@ class BloodCollectorsController {
         const bloodCollectors = users.map(b => ({ ...b.bloodCollectors, username: b.username }))
 
         const bloodCollectorsWithPosition = await getLatAndLongOfBloodCollectors(bloodCollectors)
-
+        
         return res.json(bloodCollectorsWithPosition)
     }
 

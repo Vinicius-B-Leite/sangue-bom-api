@@ -19,7 +19,8 @@ export const getLatAndLongOfBloodCollectors = async (bloodCollectors: Props) => 
         const index = bloodCollectors.indexOf(b)
         bloodCollectorsWithPosition.push({
             ...bloodCollectors[index],
-            position
+            lat: position.lat,
+            lng: position.lng
         })
     }
 
