@@ -188,7 +188,7 @@ class AuthController {
             }
         })
 
-        return res.json(updatedUser)
+        return res.json({...updatedUser, type: 'donors'})
     }
 }
 

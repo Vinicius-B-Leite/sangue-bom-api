@@ -126,7 +126,11 @@ class DonateController {
                 donorID: userid
             },
             include: {
-                bloodCollectors: true,
+                bloodCollectors: {
+                    include:{
+                        users: true
+                    }
+                },
                 donors: true
             },
             orderBy: {

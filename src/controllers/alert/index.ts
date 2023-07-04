@@ -46,9 +46,8 @@ class AlertController {
         const alertAlreadyExists = !!hasBloodCollector.alert
 
         if (alertAlreadyExists) {
-            const [_, alert] = await Promise.all([
-                this.sendNotificationToUsersWithBloodType(bloodTypes, description, hasBloodCollector.users.username),
-                prismaClient.alert.update({
+            if (status === false) {
+                await prismaClient.alert.update({
                     where: {
                         id: hasBloodCollector.alert?.id
                     },
@@ -58,10 +57,25 @@ class AlertController {
                         description
                     }
                 })
+                return res.end()
 
-            ])
+            } else {
+                const [_, alert] = await Promise.all([
+                    this.sendNotificationToUsersWithBloodType(bloodTypes, description, hasBloodCollector.users.username),
+                    prismaClient.alert.update({
+                        where: {
+                            id: hasBloodCollector.alert?.id
+                        },
+                        data: {
+                            bloodTypes,
+                            status,
+                            description
+                        }
+                    })
+                ])
 
-            return res.json(alert)
+                return res.json(alert)
+            }
         }
 
 

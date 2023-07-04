@@ -82,15 +82,13 @@ class BloodCollectorsController {
         }
 
 
-        const users = await prismaClient.users.findMany({
-            where:{
-                type: 'bloodCollectors'
-            },
+        const users = await prismaClient.bloodCollectors.findMany({
             include: {
-                bloodCollectors: true
+                alert: true,
+                users: true
             }
         })
-        const bloodCollectors = users.map(b => ({ ...b.bloodCollectors, username: b.username }))
+        const bloodCollectors = users.map(b => ({ ...b, username: b.users.username }))
 
         const bloodCollectorsWithPosition = await getLatAndLongOfBloodCollectors(bloodCollectors)
         
