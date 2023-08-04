@@ -1,7 +1,6 @@
 import { Request, Response } from "express";
 import { prismaClient } from "../../prisma";
 import { sendNotification } from "../../services/onesignal/sendNotification";
-import { Filter } from "@onesignal/node-onesignal";
 
 
 class AlertController {
@@ -44,6 +43,17 @@ class AlertController {
         }
 
         const alertAlreadyExists = !!hasBloodCollector.alert
+        const usersHaveBloodType = await prismaClient.donors.findMany({
+            where: {
+                bloodType: {
+                    in: bloodTypes
+                }
+            },
+            include: {
+                users: true
+            }
+        })
+        console.log("🚀 ~ file: index.ts:57 ~ AlertController ~ store= ~ usersHaveBloodType:", usersHaveBloodType)
 
         if (alertAlreadyExists) {
             if (status === false) {
@@ -73,27 +83,29 @@ class AlertController {
                         }
                     })
                 ])
+                console.log('bateu aqui')
+                for (const user of usersHaveBloodType) {
+                    await prismaClient.notification.create({
+                        data: {
+                            title: `O Ponto de coleta ${hasBloodCollector.users.username} precisa da sua ajuda`,
+                            description: description,
+                            donorsUID: user.uid,
+                            type: 'alert'
+                        }
+                    })
+                }
 
                 return res.json(alert)
             }
         }
 
 
-        const users = await prismaClient.donors.findMany({
-            where: {
-                bloodType: {
-                    in: bloodTypes
-                }
-            },
-            include: {
-                users: true
-            }
-        })
 
-        if (users) {
+
+        if (usersHaveBloodType) {
             await this.sendNotificationToUsersWithBloodType(bloodTypes, description, hasBloodCollector.users.username)
 
-            for (const user of users) {
+        for (const user of usersHaveBloodType) {
                 await prismaClient.notification.create({
                     data: {
                         description: description,

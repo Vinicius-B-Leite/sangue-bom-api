@@ -7,14 +7,14 @@ import fs from 'fs'
 class AuthController {
     async store(req: Request, res: Response) {
         const { email, bloodType, username, password, gender } = req.body
-
+        console.log(gender)
         if (!email || !bloodType || !username || !password || !gender) {
             throw new Error(JSON.stringify({ message: 'Informe todos os dados do usuário', code: '01' }))
         }
         if (!(String(email).includes('@'))) {
             throw new Error(JSON.stringify({ message: 'Envie um email válido', code: '13' }))
         }
-        if (['male', 'female'].includes(gender) === false) {
+        if (['male', 'female'].includes(gender) == false) {
             throw new Error(JSON.stringify({ message: 'Envie um gênero biológico válido', code: '20' }))
         }
 
