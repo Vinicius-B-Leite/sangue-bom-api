@@ -11,7 +11,12 @@ app.use(router)
 
 app.use((err: Error, req: Request, res: Response, nxt: NextFunction) => {
     if (err instanceof Error) {
-        return res.status(400).json(JSON.parse(err.message))
+        console.log(err)
+        try {
+            return res.status(400).json(JSON.parse(err.message))
+        } catch (error) {
+            return res.status(400).json(err)
+        }
     }
     return res.status(500).json({
         status: 'error',
