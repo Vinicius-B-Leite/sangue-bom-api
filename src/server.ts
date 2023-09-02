@@ -20,6 +20,8 @@ app.use((err: Error, req: Request, res: Response, nxt: NextFunction) => {
             })
         }
     }
+    console.log(err);
+    
     return res.status(500).json({
         status: 'error',
         message: 'Internal server errror'
