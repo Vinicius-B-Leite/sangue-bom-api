@@ -22,7 +22,6 @@ class BloodCollectorsController {
         const bloodCollectorExists = await prismaClient.users.findFirst({
             where: {
                 email,
-                type: 'bloodCollectors'
             }
         })
         if (bloodCollectorExists) {
