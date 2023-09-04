@@ -12,11 +12,12 @@ class DonateController {
         let waitDaysToDonate = 0
 
         if (gender === 'male') {
-            waitDaysToDonate = lastDonateDaysDiff <= 0 ? 0 :
+            waitDaysToDonate = lastDonateDaysDiff <= 0 ? this.daysMaleShouldWaitToDonate :
                 this.daysMaleShouldWaitToDonate - lastDonateDaysDiff
         }
         if (gender === 'female') {
-            waitDaysToDonate = lastDonateDaysDiff <= 0 ? 0 : this.daysFemaleShouldWaitToDonate - lastDonateDaysDiff
+            waitDaysToDonate = lastDonateDaysDiff <= 0 ? this.daysFemaleShouldWaitToDonate :
+                this.daysFemaleShouldWaitToDonate - lastDonateDaysDiff
         }
 
         return waitDaysToDonate
@@ -127,7 +128,7 @@ class DonateController {
             },
             include: {
                 bloodCollectors: {
-                    include:{
+                    include: {
                         users: true
                     }
                 },
@@ -141,7 +142,7 @@ class DonateController {
         if (donates.length === 0) {
             return res.json({ donates, waitDaysToDonate: 0 })
         }
-        const lastDonateDaysDiff = differenceInCalendarDays( new Date(), donates[0].date)
+        const lastDonateDaysDiff = differenceInCalendarDays(new Date(), donates[0].date)
 
         const waitDaysToDonate = this.getDaysToDonate(user.donors.gender, lastDonateDaysDiff)
 
