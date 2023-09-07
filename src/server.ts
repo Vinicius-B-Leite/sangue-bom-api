@@ -10,6 +10,7 @@ app.use(express.json())
 app.use(router)
 
 app.use((err: Error, req: Request, res: Response, nxt: NextFunction) => {
+    console.log(err);
     if (err instanceof Error) {
         try {
             return res.status(400).json(JSON.parse(err.message))
@@ -20,7 +21,6 @@ app.use((err: Error, req: Request, res: Response, nxt: NextFunction) => {
             })
         }
     }
-    console.log(err);
     
     return res.status(500).json({
         status: 'error',
