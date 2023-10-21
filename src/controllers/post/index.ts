@@ -156,7 +156,7 @@ class PostController {
             let postsFormated = posts.map(post => ({
                 ...post,
                 bloodCollectors: {
-                    ...post.bloodCollectors, 
+                    ...post.bloodCollectors,
                     username: post.bloodCollectors.users.username
                 }
             }))
@@ -195,6 +195,20 @@ class PostController {
 
         let postsFormated = ({ ...post, bloodCollectors: { ...post.bloodCollectors, ...post.bloodCollectors.users } })
         return res.json(postsFormated)
+    }
+
+    async destroy(req: Request, res: Response) {
+        const id = req.query.id as string
+
+        const post = await prismaClient.posts.findFirst({ where: { id } })
+
+        if (!post) {
+            throw new Error(JSON.stringify({ message: 'Esta campanha não existe', code: '23' }))
+        }
+
+        await prismaClient.posts.delete({ where: { id } })
+
+        return res.json({ status: 'success' })
     }
 }
 

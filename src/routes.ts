@@ -42,6 +42,7 @@ router.post('/posts', upload.single('banner'), postController.store)
 router.put('/posts', isLogged, upload.single('banner'), postController.update)
 router.get('/posts', isLogged, postController.index)
 router.get('/posts/single', isLogged, postController.show)
+router.delete('/posts/delete', isLogged, postController.destroy)
 
 router.post('/questions', isLogged, questionsController.store)
 router.get('/questions', isLogged, questionsController.index)
